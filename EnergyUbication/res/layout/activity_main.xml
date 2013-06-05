@@ -8,9 +8,86 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     tools:context=".Main" >
 
-    <TextView
+    <EditText
+        android:id="@+id/edtLongitud"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/hello_world" />
+        android:layout_alignLeft="@+id/edtLatitud"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/edtLatitud"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="@string/longitud" />
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/ubicacion" />
+
+    <EditText
+        android:id="@+id/edtLatitud"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView1"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView1"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="@string/latitud" />
+
+    <Button
+        android:id="@+id/btnActivar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/edtPrecision"
+        android:text="@string/activar" />
+
+    <Button
+        android:id="@+id/btnDesactivar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btnActivar"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/btnActivar"
+        android:text="@string/desactivar" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/btnDesactivar"
+        android:layout_below="@+id/btnDesactivar"
+        android:layout_marginTop="14dp"
+        android:text="@string/proveedor_estado" />
+
+    <EditText
+        android:id="@+id/edtPrecision"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/edtLongitud"
+        android:layout_alignRight="@+id/btnActivar"
+        android:layout_below="@+id/edtLongitud"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="@string/precision" >
+
+        <requestFocus />
+    </EditText>
+
+    <EditText
+        android:id="@+id/edtEstadoProveedor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@+id/textView2"
+        android:layout_alignParentRight="true"
+        android:layout_below="@+id/textView2"
+        android:ems="10"
+        android:enabled="false"
+        android:hint="@string/estado" />
 
 </RelativeLayout>
