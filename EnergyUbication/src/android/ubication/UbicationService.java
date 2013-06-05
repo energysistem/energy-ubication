@@ -4,6 +4,11 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.IBinder;
 
+/**
+ * 
+ * @author Flavio Corpa Ríos
+ *
+ */
 public class UbicationService extends Service{
 
 	@Override
