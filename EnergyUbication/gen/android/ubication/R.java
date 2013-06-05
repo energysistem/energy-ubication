@@ -55,6 +55,8 @@ public final class R {
         public static final int hello_world=0x7f050002;
         public static final int login_progress_signing_in=0x7f050009;
         /**  Strings related to login 
+ Strings related to login 
+ Strings related to login 
          */
         public static final int prompt_email=0x7f050004;
         public static final int prompt_password=0x7f050005;
