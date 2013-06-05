@@ -8,7 +8,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Intent;
+//import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -149,11 +149,11 @@ public class LoginActivity extends Activity {
 			mEmailView.setError(getString(R.string.error_field_required));
 			focusView = mEmailView;
 			cancel = true;
-		} //else if (!mEmail.contains("@")) {
-//			mEmailView.setError(getString(R.string.error_invalid_email));
-//			focusView = mEmailView;
-//			cancel = true;
-//		}
+		} else if (!mEmail.contains("@")) {
+			mEmailView.setError(getString(R.string.error_invalid_email));
+			focusView = mEmailView;
+			cancel = true;
+		}
 
 		if (cancel) {
 			// There was an error; don't attempt login and focus the first
@@ -231,7 +231,6 @@ public class LoginActivity extends Activity {
 				
 				//socket = new Socket("192.168.251.192", 7777); //INSTITUTO
 				socket = new Socket("192.168.251.19", 7777); //INSTITUTO
-				//socket = new Socket("192.168.2.105", 7777); //CASA
 				
 				if (socket.isConnected())
 				{
