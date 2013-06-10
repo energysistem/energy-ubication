@@ -17,7 +17,8 @@ public class UbicationService extends IntentService
 {
 	  public UbicationService()
 	  {
-	    super(UbicationService.class.getSimpleName());
+	    //super(UbicationService.class.getSimpleName());
+		  super("UbicationService");
 	  }
 
 	  @Override

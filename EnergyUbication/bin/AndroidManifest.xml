@@ -30,7 +30,7 @@
             android:label="@string/title_activity_login"
             android:windowSoftInputMode="adjustResize|stateVisible" >
         </activity>
-        <service android:name=".UbicationService" android:process=":UbicationService" />
+        <service android:name=".UbicationService" android:process="UbicationService" />
     </application>
 
 </manifest>

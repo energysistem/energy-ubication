@@ -15,7 +15,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-//import android.content.Intent;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -312,9 +312,6 @@ public class LoginActivity extends Activity {
 						//Si la validación es del SERVIDOR ES CORRECTA
 						//Hago un Intent a la Actividad del chat
 						//Pasándole el USUARIO con el que he entrado
-						//Intent i = new Intent(getApplicationContext(), MainActivity.class);
-						//i.putExtra("usuario", mEmail);
-						
 						Intent i = new Intent(getApplicationContext(), Conversaciones.class);
 						i.putExtra("Usuario", mEmail);
 						startActivity(i);
