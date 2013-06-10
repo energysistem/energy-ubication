@@ -81,8 +81,8 @@ public class Main extends Activity {
     	mostrarPosicion(localizacion);
     	
     	//Si el GPS está deshabilitado
-		if (!gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
-			advertirGPSdeshabilitado();
+		//if (!gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
+			//advertirGPSdeshabilitado();
 		
 		//Si no hay cobertura
 		if (!gestorLocalizacion.isProviderEnabled(LocationManager.NETWORK_PROVIDER))
@@ -105,8 +105,13 @@ public class Main extends Activity {
 	    	}
     	};
     	
-    	gestorLocalizacion.requestLocationUpdates(
-    			LocationManager.GPS_PROVIDER, 30000, 0, locEscuchador);
+    	//Si el GPS está habilitado, usa la ubicación del GPS
+    	if (gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
+    		gestorLocalizacion.requestLocationUpdates(
+	    			LocationManager.GPS_PROVIDER, 30000, 0, locEscuchador);
+    	else //Si no, utiliza la ubicación de la red móvil.
+	    	gestorLocalizacion.requestLocationUpdates(
+	    			LocationManager.NETWORK_PROVIDER, 30000, 0, locEscuchador);
     }
      
     private void mostrarPosicion(Location localizacion) {
