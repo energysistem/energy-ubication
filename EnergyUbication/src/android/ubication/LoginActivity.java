@@ -273,6 +273,7 @@ public class LoginActivity extends Activity {
 		    		JSONObject respuestaJSON = new JSONObject(respuestaString);
 		    		
 		    		//Si la respuesta del servidor es true
+		    		//if (respuestaJSON.get("result") == "true" && respuestaJSON.get("id") == stringId)
 		    		if (respuestaJSON.get("result") == "true")
 		    		{	//El Login es correcto
 		    			return true;
