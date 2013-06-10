@@ -1,9 +1,16 @@
 package android.ubication;
 
-import java.io.IOException;
-import java.io.ObjectInputStream;
-import java.io.ObjectOutputStream;
-import java.net.Socket;
+//import java.io.IOException;
+//import java.io.ObjectInputStream;
+//import java.io.ObjectOutputStream;
+//import java.net.Socket;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
@@ -216,27 +223,79 @@ public class LoginActivity extends Activity {
 	 */
 	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 		
-		Socket socket; //Network Socket
-		ObjectInputStream dataInput; //Network Input Stream
-		ObjectOutputStream dataOutput; //Network Output Stream
+		//Socket socket; //Network Socket
+		//ObjectInputStream dataInput; //Network Input Stream
+		//ObjectOutputStream dataOutput; //Network Output Stream
 		
 		@Override
 		protected Boolean doInBackground(Void... params) {
+			
+			//TODO URL del Servidor.
+	    	String url = "http://energysistem/ubication/index.php";
+	    	String login;
 
 			try 
 			{
-				
 				//NETWORK ACCESS
 				Thread.sleep(2000);
 				
-				//socket = new Socket("192.168.251.192", 7777); //INSTITUTO
-				socket = new Socket("192.168.251.19", 7777); //INSTITUTO
+				//Creamos un nuevo objeto HttpClient que será el encargado de realizar la
+		    	//comunicación HTTP con el servidor a partir de los datos que le damos.
+		    	HttpClient comunicacion = new DefaultHttpClient();
+		    	
+		    	//Creamos una peticion POST indicando la URL de llamada al servicio.
+		    	HttpPost peticion = new HttpPost(url);
+		    	
+		    	//Objeto JSON con los datos del Login.
+		    	JSONObject object = new JSONObject();
+		        try 
+		        {
+		            object.put("action", "login");
+		            object.put("id", "123456");			//TODO El Id debe ser el Now en milisec.
+		            object.put("email", mEmail);
+		            object.put("password", mPassword);
+		            
+		        } catch (Exception ex) {
+		    		Log.e("Error", "Error al crear objeto JSON.", ex);
+		        }
+		        
+		        try 
+		        {
+		        	login = object.toString();
+		        	
+			    	//Modificamos mediante setHeader el atributo http content-type para indicar
+			    	//que el formato de los datos que utilizaremos en la comunicación será JSON.
+		        	peticion.setEntity(new StringEntity(login, "UTF8"));
+			    	peticion.setHeader("content-type", "application/json");
+
+		    		//Ejecutamos la petición y obtenemos la respuesta en forma de cadena
+		    		HttpResponse respuesta = comunicacion.execute(peticion);
+		    		String respuestaString = EntityUtils.toString(respuesta.getEntity());
+		    		
+		    		//Creamos un objeto JSONObject para poder acceder a los atributos (campos) del objeto.
+		    		JSONObject respuestaJSON = new JSONObject(respuestaString);
+		    		
+		    		//Si la respuesta del servidor es true
+		    		if (respuestaJSON.get("result") == "true")
+		    		{	//El Login es correcto
+		    			return true;
+		    			//Arrancamos el Service.
+		    		}
+		    		else
+		    			return false;
+		    		
+		    	} catch(Exception e) {
+		    		Log.e("Error", "Error al recibir respuesta del Servidor.", e);
+		    	}
 				
-				if (socket.isConnected())
-				{
+				//socket = new Socket("192.168.251.192", 7777); //INSTITUTO
+				//socket = new Socket("192.168.251.19", 7777); //INSTITUTO
+				
+				//if (socket.isConnected())
+				//{
 					//Aquí le envío el usuario y la contraseña al Servidor
 					// SEPARADOS POR UN ":"
-					dataOutput = new ObjectOutputStream(socket.getOutputStream());
+					//dataOutput = new ObjectOutputStream(socket.getOutputStream());
 					
 					//AQUÍ VIENE EL HASHEO
 					//String hashPassword = Encriptador.getStringMessageDigest(mPassword, Encriptador.MD5);
@@ -245,7 +304,7 @@ public class LoginActivity extends Activity {
 					//dataOutput.writeUTF( "Login" + ":" + mEmail + ":" + hashPassword);
 					
 					//Aquí tiene que leer del SERVIDOR
-					dataInput = new ObjectInputStream(socket.getInputStream());
+					//dataInput = new ObjectInputStream(socket.getInputStream());
 					//Mensaje msg = (Mensaje)dataInput.readObject();
 					//String mensaje = msg.mensaje;
 					//String mensaje = dataInput.readUTF();
@@ -269,13 +328,10 @@ public class LoginActivity extends Activity {
 						return false;
 					}*/
 						
-				}
+				//}
 				
 			} catch (InterruptedException e) {
 				return false;
-			} catch (IOException ex)
-			{
-				Log.i("LoginTask:", "Exception: " + ex.toString());
 			}
 			return true;
 		}
