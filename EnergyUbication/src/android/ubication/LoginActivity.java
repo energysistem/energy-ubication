@@ -232,7 +232,6 @@ public class LoginActivity extends Activity {
 			
 			//TODO URL del Servidor.
 	    	String url = "http://energysistem/ubication/index.php";
-	    	String login;
 
 			try 
 			{
@@ -251,7 +250,7 @@ public class LoginActivity extends Activity {
 		        try 
 		        {
 		            object.put("action", "login");
-		            object.put("id", "123456");			//TODO El Id debe ser el Now en milisec.
+		            object.put("id", System.currentTimeMillis()); //Tiempo del Sistema en milisecs.
 		            object.put("email", mEmail);
 		            object.put("password", mPassword);
 		            
@@ -261,11 +260,9 @@ public class LoginActivity extends Activity {
 		        
 		        try 
 		        {
-		        	login = object.toString();
-		        	
 			    	//Modificamos mediante setHeader el atributo http content-type para indicar
 			    	//que el formato de los datos que utilizaremos en la comunicación será JSON.
-		        	peticion.setEntity(new StringEntity(login, "UTF8"));
+		        	peticion.setEntity(new StringEntity(object.toString(), "UTF8"));
 			    	peticion.setHeader("content-type", "application/json");
 
 		    		//Ejecutamos la petición y obtenemos la respuesta en forma de cadena
@@ -279,7 +276,8 @@ public class LoginActivity extends Activity {
 		    		if (respuestaJSON.get("result") == "true")
 		    		{	//El Login es correcto
 		    			return true;
-		    			//Arrancamos el Service.
+		    			//Arrancamos el Service
+		    			//startService(new Intent(this, UbicationService.class));
 		    		}
 		    		else
 		    			return false;
