@@ -4,11 +4,16 @@ package android.ubication;
 //import java.io.ObjectInputStream;
 //import java.io.ObjectOutputStream;
 //import java.net.Socket;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import android.animation.Animator;
@@ -230,8 +235,8 @@ public class LoginActivity extends Activity {
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			
-			//TODO URL del Servidor.
-	    	String url = "http://energysistem/ubication/index.php";
+			//URL del Servidor.
+	    	String url = "http://www.energysistem.com/ubication/index.php";
 
 			try 
 			{
@@ -246,25 +251,31 @@ public class LoginActivity extends Activity {
 		    	HttpPost peticion = new HttpPost(url);
 		    	
 		    	//Objeto JSON con los datos del Login.
-		    	JSONObject object = new JSONObject();
-		        try 
-		        {
-		            object.put("action", "login");
-		            object.put("id", System.currentTimeMillis()); //Tiempo del Sistema en milisecs.
-		            object.put("email", mEmail);
-		            object.put("password", mPassword);
-		            
-		        } catch (Exception ex) {
-		    		Log.e("Error", "Error al crear objeto JSON.", ex);
-		        }
+//		    	JSONObject object = new JSONObject();
+//		        try 
+//		        {
+//		            object.put("action", "login");
+//		            object.put("id", System.currentTimeMillis()); //Tiempo del Sistema en milisecs.
+//		            object.put("email", mEmail);
+//		            object.put("password", mPassword);
+//		            
+//		        } catch (Exception ex) {
+//		    		Log.e("Error", "Error al crear objeto JSON.", ex);
+//		        }
 		        
 		        try 
 		        {
+		        	List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+		            nameValuePairs.add(new BasicNameValuePair("action", "login"));
+		            nameValuePairs.add(new BasicNameValuePair("id", "123456"));
+		            nameValuePairs.add(new BasicNameValuePair("email", mEmail));
+		            nameValuePairs.add(new BasicNameValuePair("password", mPassword));
+		            peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+
 			    	//Modificamos mediante setHeader el atributo http content-type para indicar
 			    	//que el formato de los datos que utilizaremos en la comunicación será JSON.
-		        	peticion.setEntity(new StringEntity(object.toString(), "UTF8"));
-			    	peticion.setHeader("content-type", "application/json");
-
+		        	peticion.setHeader("Accept", "application/json");
+			    	
 		    		//Ejecutamos la petición y obtenemos la respuesta en forma de cadena
 		    		HttpResponse respuesta = comunicacion.execute(peticion);
 		    		String respuestaString = EntityUtils.toString(respuesta.getEntity());
@@ -274,15 +285,18 @@ public class LoginActivity extends Activity {
 		    		
 		    		//Si la respuesta del servidor es true
 		    		//if (respuestaJSON.get("result") == "true" && respuestaJSON.get("id") == stringId)
-		    		if (respuestaJSON.get("result") == "true")
+		    		if (respuestaJSON.get("result").equals("true"))
 		    		{	//El Login es correcto
+		    			Log.e("LogDebug", "true");
 		    			return true;
 		    			//Arrancamos el Service
 		    			//startService(new Intent(this, UbicationService.class));
 		    		}
 		    		else
+		    		{
+		    			Log.e("LogDebug", "false");
 		    			return false;
-		    		
+		    		}
 		    	} catch(Exception e) {
 		    		Log.e("Error", "Error al recibir respuesta del Servidor.", e);
 		    	}
@@ -325,11 +339,10 @@ public class LoginActivity extends Activity {
 					}*/
 						
 				//}
-				
+				return false;
 			} catch (InterruptedException e) {
 				return false;
 			}
-			return true;
 		}
 
 		@Override
