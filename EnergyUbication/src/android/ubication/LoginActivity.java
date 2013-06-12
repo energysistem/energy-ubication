@@ -251,9 +251,10 @@ public class LoginActivity extends Activity {
 			
 			try 
 			{
+				String idEnviado = String.valueOf(System.currentTimeMillis());
 				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
 			    nameValuePairs.add(new BasicNameValuePair("action", "login"));
-			    nameValuePairs.add(new BasicNameValuePair("id", "123456"));
+			    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
 			    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
 			    nameValuePairs.add(new BasicNameValuePair("password", mPassword));
 			    peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
@@ -270,8 +271,7 @@ public class LoginActivity extends Activity {
 				JSONObject respuestaJSON = new JSONObject(respuestaString);
 				
 				//Si la respuesta del servidor es true
-				//if (respuestaJSON.get("result") == "true" && respuestaJSON.get("id") == stringId)
-				if (respuestaJSON.get("result").equals("true"))
+				if (respuestaJSON.get("result").equals("true") && respuestaJSON.get("id").equals(idEnviado))
 				{	//El Login es correcto
 					Log.e("LogDebug", "true");
 					return true;
