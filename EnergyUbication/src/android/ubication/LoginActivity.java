@@ -1,12 +1,7 @@
 package android.ubication;
 
-//import java.io.IOException;
-//import java.io.ObjectInputStream;
-//import java.io.ObjectOutputStream;
-//import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
@@ -228,29 +223,20 @@ public class LoginActivity extends Activity {
 	 */
 	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 		
-		//Socket socket; //Network Socket
-		//ObjectInputStream dataInput; //Network Input Stream
-		//ObjectOutputStream dataOutput; //Network Output Stream
-		
 		@Override
 		protected Boolean doInBackground(Void... params) {
 			
 			//URL del Servidor.
 	    	String url = "http://www.energysistem.com/ubication/index.php";
 
-			try 
-			{
-				//NETWORK ACCESS
-				Thread.sleep(2000);
-				
-				//Creamos un nuevo objeto HttpClient que será el encargado de realizar la
-		    	//comunicación HTTP con el servidor a partir de los datos que le damos.
-		    	HttpClient comunicacion = new DefaultHttpClient();
-		    	
-		    	//Creamos una peticion POST indicando la URL de llamada al servicio.
-		    	HttpPost peticion = new HttpPost(url);
-		    	
-		    	//Objeto JSON con los datos del Login.
+			//Creamos un nuevo objeto HttpClient que será el encargado de realizar la
+			//comunicación HTTP con el servidor a partir de los datos que le damos.
+			HttpClient comunicacion = new DefaultHttpClient();
+			
+			//Creamos una peticion POST indicando la URL de llamada al servicio.
+			HttpPost peticion = new HttpPost(url);
+			
+			//Objeto JSON con los datos del Login.
 //		    	JSONObject object = new JSONObject();
 //		        try 
 //		        {
@@ -262,87 +248,45 @@ public class LoginActivity extends Activity {
 //		        } catch (Exception ex) {
 //		    		Log.e("Error", "Error al crear objeto JSON.", ex);
 //		        }
-		        
-		        try 
-		        {
-		        	List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-		            nameValuePairs.add(new BasicNameValuePair("action", "login"));
-		            nameValuePairs.add(new BasicNameValuePair("id", "123456"));
-		            nameValuePairs.add(new BasicNameValuePair("email", mEmail));
-		            nameValuePairs.add(new BasicNameValuePair("password", mPassword));
-		            peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+			
+			try 
+			{
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+			    nameValuePairs.add(new BasicNameValuePair("action", "login"));
+			    nameValuePairs.add(new BasicNameValuePair("id", "123456"));
+			    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
+			    nameValuePairs.add(new BasicNameValuePair("password", mPassword));
+			    peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
-			    	//Modificamos mediante setHeader el atributo http content-type para indicar
-			    	//que el formato de los datos que utilizaremos en la comunicación será JSON.
-		        	peticion.setHeader("Accept", "application/json");
-			    	
-		    		//Ejecutamos la petición y obtenemos la respuesta en forma de cadena
-		    		HttpResponse respuesta = comunicacion.execute(peticion);
-		    		String respuestaString = EntityUtils.toString(respuesta.getEntity());
-		    		
-		    		//Creamos un objeto JSONObject para poder acceder a los atributos (campos) del objeto.
-		    		JSONObject respuestaJSON = new JSONObject(respuestaString);
-		    		
-		    		//Si la respuesta del servidor es true
-		    		//if (respuestaJSON.get("result") == "true" && respuestaJSON.get("id") == stringId)
-		    		if (respuestaJSON.get("result").equals("true"))
-		    		{	//El Login es correcto
-		    			Log.e("LogDebug", "true");
-		    			return true;
-		    			//Arrancamos el Service
-		    			//startService(new Intent(this, UbicationService.class));
-		    		}
-		    		else
-		    		{
-		    			Log.e("LogDebug", "false");
-		    			return false;
-		    		}
-		    	} catch(Exception e) {
-		    		Log.e("Error", "Error al recibir respuesta del Servidor.", e);
-		    	}
+				//Modificamos mediante setHeader el atributo http content-type para indicar
+				//que el formato de los datos que utilizaremos en la comunicación será JSON.
+				peticion.setHeader("Accept", "application/json");
 				
-				//socket = new Socket("192.168.251.192", 7777); //INSTITUTO
-				//socket = new Socket("192.168.251.19", 7777); //INSTITUTO
+				//Ejecutamos la petición y obtenemos la respuesta en forma de cadena
+				HttpResponse respuesta = comunicacion.execute(peticion);
+				String respuestaString = EntityUtils.toString(respuesta.getEntity());
 				
-				//if (socket.isConnected())
-				//{
-					//Aquí le envío el usuario y la contraseña al Servidor
-					// SEPARADOS POR UN ":"
-					//dataOutput = new ObjectOutputStream(socket.getOutputStream());
-					
-					//AQUÍ VIENE EL HASHEO
-					//String hashPassword = Encriptador.getStringMessageDigest(mPassword, Encriptador.MD5);
-					//Mensaje m = new Mensaje("Login" + ":" + mEmail + ":" + hashPassword);
-					//dataOutput.writeObject(m);
-					//dataOutput.writeUTF( "Login" + ":" + mEmail + ":" + hashPassword);
-					
-					//Aquí tiene que leer del SERVIDOR
-					//dataInput = new ObjectInputStream(socket.getInputStream());
-					//Mensaje msg = (Mensaje)dataInput.readObject();
-					//String mensaje = msg.mensaje;
-					//String mensaje = dataInput.readUTF();
-					
-					/*if (mensaje.equals("true"))
-					{
-						//Si la validación es del SERVIDOR ES CORRECTA
-						//Hago un Intent a la Actividad del chat
-						//Pasándole el USUARIO con el que he entrado
-						Intent i = new Intent(getApplicationContext(), Conversaciones.class);
-						i.putExtra("Usuario", mEmail);
-						startActivity(i);
-						return true;
-					}
-					else
-					{
-						//Si la validación del servidor es INCORRECTA
-						return false;
-					}*/
-						
-				//}
-				return false;
-			} catch (InterruptedException e) {
-				return false;
+				//Creamos un objeto JSONObject para poder acceder a los atributos (campos) del objeto.
+				JSONObject respuestaJSON = new JSONObject(respuestaString);
+				
+				//Si la respuesta del servidor es true
+				//if (respuestaJSON.get("result") == "true" && respuestaJSON.get("id") == stringId)
+				if (respuestaJSON.get("result").equals("true"))
+				{	//El Login es correcto
+					Log.e("LogDebug", "true");
+					return true;
+					//Arrancamos el Service
+					//startService(new Intent(this, UbicationService.class));
+				}
+				else
+				{
+					Log.e("LogDebug", "false");
+					return false;
+				}
+			} catch(Exception e) {
+				Log.e("Error", "Error al recibir respuesta del Servidor.", e);
 			}
+			return false;
 		}
 
 		@Override
