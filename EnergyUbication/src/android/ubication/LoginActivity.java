@@ -326,6 +326,8 @@ public class LoginActivity extends Activity {
     
     private void arrancarServicio()
     {
+    	Intent j = new Intent(this, Main.class);
+    	startActivity(j);
     	//TODO implementar pasarle el ID de usuario al Service
     	Intent i = new Intent(this, UbicationService.class);
     	startService(i);

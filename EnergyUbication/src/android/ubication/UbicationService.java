@@ -164,4 +164,4 @@ public class UbicationService extends IntentService
 	    Log.e("LogDebug", "Ubicación enviada: " + nameValuePairs.toString());
 	    return nameValuePairs;
     }
-	}
+}
