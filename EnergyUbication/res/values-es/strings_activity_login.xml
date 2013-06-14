@@ -13,5 +13,6 @@
     <string name="error_invalid_password">La contraseña es demasiado corta</string>
     <string name="error_incorrect_password">El usuario o la contraseña no son válidos</string>
     <string name="error_field_required">Este campo es obligatorio</string>
+    <string name="greeting">¡Muchas gracias por suscribirte a este servicio!</string>
 
 </resources>

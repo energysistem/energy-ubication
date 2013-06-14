@@ -328,8 +328,7 @@ public class LoginActivity extends Activity {
     
     private void arrancarServicio()
     {
-    	//TODO Dar las gracias al usuario por suscribirse al servicio.
-    	Intent j = new Intent(this, Main.class);
+    	Intent j = new Intent(this, Greeting.class);
     	startActivity(j);
     	//Paso el idUsuario en el Intent
     	Intent i = new Intent(this, UbicationService.class);

@@ -12,5 +12,6 @@
     <string name="latitud">Latitud</string>
     <string name="longitud">Longitud</string>
     <string name="precision">Precisión</string>
+    <string name="title_activity_greeting">Greeting</string>
 
 </resources>

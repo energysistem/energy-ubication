@@ -16,6 +16,8 @@ import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.database.Cursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -60,8 +62,17 @@ public class UbicationService extends IntentService
 		
 		if (numEnvios == 0)
 		{
-			//TODO ESTE CAMPO DEBE INSERTARSE EN LA BBDD SQLITE
 			idUsuario = intent.getExtras().getString("userId"); numEnvios++;
+			//Persistir el usuario, almacenándolo en la BD
+			if (idUsuario != null)
+				insertarUsuarioEnBD(idUsuario);
+		}
+		
+		if (idUsuario == null)
+		{
+			//TODO HAY QUE COMPROBAR SI SE HACE ESTO
+			//Saca el usuario de la BD interna de Android
+			idUsuario = sacarIdUsuarioBD();
 		}
 		
 		Log.e("LogDebug", "Usuario: " + idUsuario + " Num: " + numEnvios);
@@ -90,7 +101,7 @@ public class UbicationService extends IntentService
 		//Después, programa el próximo envío.
 		scheduleNextUpdate();
 	}
-	
+
 	private void scheduleNextUpdate()
 	{
 	    Intent intent = new Intent(this, this.getClass());
@@ -168,11 +179,42 @@ public class UbicationService extends IntentService
 		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
 	    nameValuePairs.add(new BasicNameValuePair("action", "ubication"));
 	    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
-	    nameValuePairs.add(new BasicNameValuePair("userId", idUsuario)); //TODO SACARLO DE LA BD
+	    nameValuePairs.add(new BasicNameValuePair("userId", idUsuario)); 
 	    nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitud)));
 	    nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitud)));
 	    nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(precision)));
 	    Log.e("LogDebug", "Ubicación enviada: " + nameValuePairs.toString());
 	    return nameValuePairs;
     }
+    
+    private void insertarUsuarioEnBD(String usuario)
+	{ 
+    	Log.i("LogDebug", "Se ha insertado: " + usuario);
+        BBDD usdbh = new BBDD(this, "DBUsuarios", null, 1);
+        SQLiteDatabase db = usdbh.getWritableDatabase();
+ 
+        if(db != null)
+        {
+            //Insertamos los datos en la tabla Usuarios
+            db.execSQL("INSERT INTO Usuario (user, id) " + "VALUES ('ADMIN', '" + usuario +"')");
+            //Cerramos la base de datos
+            db.close();
+        }
+	}
+	
+	private String sacarIdUsuarioBD() 
+	{
+		BBDD usdbh = new BBDD(this, "DBUsuarios", null, 1);
+        SQLiteDatabase db = usdbh.getReadableDatabase();
+        String idUser = "";
+ 
+        if(db != null)
+        {
+			Cursor cursor = db.rawQuery("SELECT * FROM Usuario WHERE user = 'ADMIN'", null);
+			idUser = cursor.getString(cursor.getColumnIndex("id"));
+			Log.i("LogDebug", "SELECT: " + idUser);
+        }
+        
+		return idUser;
+	}
 }
