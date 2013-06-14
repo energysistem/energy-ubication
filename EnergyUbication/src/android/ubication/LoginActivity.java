@@ -45,7 +45,7 @@ public class LoginActivity extends Activity {
 	/**
 	 * URL del Servidor
 	 */
-	//private static final String URL = "http://www.energysistem.com/ubication/index.php";
+	private static final String URL = "http://www.energysistem.com/ubication/index.php";
 	
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -110,7 +110,8 @@ public class LoginActivity extends Activity {
 		return true;
 	}
 	
-	/*@Override
+	//MENÚ 
+	/*@Override 
 	public boolean onMenuItemSelected(int featureId, MenuItem item) {
 		if (item.getItemId() == R.id.menu_forgot_password)
 		{
@@ -235,16 +236,13 @@ public class LoginActivity extends Activity {
 		
 		@Override
 		protected Boolean doInBackground(Void... params) {
-			
-			//URL del Servidor.
-	    	String url = "http://www.energysistem.com/ubication/index.php";
 
 			//Creamos un nuevo objeto HttpClient que será el encargado de realizar la
 			//comunicación HTTP con el servidor a partir de los datos que le damos.
 			HttpClient comunicacion = new DefaultHttpClient();
 			
 			//Creamos una peticion POST indicando la URL de llamada al servicio.
-			HttpPost peticion = new HttpPost(url);
+			HttpPost peticion = new HttpPost(URL);
 			
 			//Objeto JSON con los datos del Login.
 //		    	JSONObject object = new JSONObject();
@@ -328,7 +326,7 @@ public class LoginActivity extends Activity {
     
     private void arrancarServicio()
     {
-    	//TODO implementar pasarle el mEmail al Service
+    	//TODO implementar pasarle el ID de usuario al Service
     	Intent i = new Intent(this, UbicationService.class);
     	startService(i);
     }

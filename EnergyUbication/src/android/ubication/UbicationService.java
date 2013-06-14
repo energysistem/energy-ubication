@@ -30,6 +30,12 @@ import android.util.Log;
  */
 public class UbicationService extends IntentService
 {
+	/**
+	 * URL del Servidor
+	 */
+	private static final String URL = "http://www.energysistem.com/ubication/index.php";
+	
+	
 	//Atributos de Clase
 	private double latitud;
 	private double longitud;
@@ -46,15 +52,13 @@ public class UbicationService extends IntentService
 	@Override
 	protected void onHandleIntent(Intent intent)
 	{
-    	String url = "http://www.energysistem.com/ubication/index.php";
-    	
 		Log.e("LogDebug", "Se ha arrancado el Servicio!");
 		
 		localizar();
 		
 		//Envía la ubicación al Servidor.
 		HttpClient comunicacion = new DefaultHttpClient();
-		HttpPost peticion = new HttpPost(url);
+		HttpPost peticion = new HttpPost(URL);
 		try 
 		{
 			peticion.setEntity(new UrlEncodedFormEntity(sendUbication()));
@@ -83,7 +87,7 @@ public class UbicationService extends IntentService
 	    //TODO Hay que implementar que el tiempo entre envíos lo determine el Servidor.
 
 	    long currentTimeMillis = System.currentTimeMillis();
-	    long nextUpdateTimeMillis = currentTimeMillis + 15 * DateUtils.MINUTE_IN_MILLIS;
+	    long nextUpdateTimeMillis = currentTimeMillis + 1 * DateUtils.MINUTE_IN_MILLIS;
 	    Time nextUpdateTime = new Time();
 	    nextUpdateTime.set(nextUpdateTimeMillis);
 	    
@@ -97,9 +101,17 @@ public class UbicationService extends IntentService
     	gestorLocalizacion = 
     		(LocationManager)getSystemService(Context.LOCATION_SERVICE);
     	
+    	Location localizacion;
+    	
     	//Obtenemos la última posición conocida
-    	Location localizacion = 
-    		gestorLocalizacion.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    	if (gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
+    	{
+    		localizacion = gestorLocalizacion.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    	}
+    	else
+    	{
+    		localizacion = gestorLocalizacion.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+    	}
     	
     	//Mostramos la última posición conocida
     	updateUbication(localizacion);
