@@ -1,12 +1,9 @@
 package android.ubication;
 
-import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.HttpPost;
@@ -22,7 +19,7 @@ import android.content.Context;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
-//import android.content.Intent;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -109,6 +106,8 @@ public class LoginActivity extends Activity {
 						attemptLogin();
 					}
 				});
+		
+		localizar(); //TODO ESTO ES UNA PRUEBA
 	}
 
 	@Override
@@ -275,8 +274,6 @@ public class LoginActivity extends Activity {
 //			    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
 //			    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
 //			    nameValuePairs.add(new BasicNameValuePair("password", mPassword));
-			    
-				//localizar(); //ELIMINAR
 				
 			    //peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 				peticion.setEntity(new UrlEncodedFormEntity(sendUbication()));
@@ -299,8 +296,6 @@ public class LoginActivity extends Activity {
 				{	//El Login es correcto
 					Log.e("LogDebug", "true");
 					return true;
-					//Arrancamos el Service
-					//startService(new Intent(this, UbicationService.class));
 				}
 				else
 				{
@@ -319,6 +314,9 @@ public class LoginActivity extends Activity {
 			showProgress(false);
 
 			if (success) {
+				//Aranco el Servicio
+				arrancarServicio();
+				//Fin del Login
 				finish();
 			} else {
 				mEmailView.setError(getString(R.string.error_incorrect_password));
@@ -345,12 +343,12 @@ public class LoginActivity extends Activity {
     		gestorLocalizacion.getLastKnownLocation(LocationManager.GPS_PROVIDER);
     	
     	//Mostramos la última posición conocida
-    	sendUbicationToServer(localizacion);
+    	updateUbication(localizacion);
     	
     	//Nos registramos para recibir actualizaciones de la posición
     	locEscuchador = new LocationListener() {
 	    	public void onLocationChanged(Location localizacion) {
-					sendUbicationToServer(localizacion);
+	    		updateUbication(localizacion);
 	    	}
 	    	public void onProviderDisabled(String proveedor){
 	    		//edtEstadoProveedor.setText("Proveedor desconectado");
@@ -372,7 +370,7 @@ public class LoginActivity extends Activity {
 	    			LocationManager.NETWORK_PROVIDER, 30000, 0, locEscuchador);
     }
      
-    private void sendUbicationToServer(Location localizacion)
+    private void updateUbication(Location localizacion)
     {
 	    latitud = localizacion.getLatitude();
 	    longitud = localizacion.getLongitude();
@@ -386,12 +384,20 @@ public class LoginActivity extends Activity {
 	    nameValuePairs.add(new BasicNameValuePair("action", "ubication"));
 	    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
 	    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
-	    //nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitud)));
-	    //nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitud)));
-	    //nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(precision)));
-	    nameValuePairs.add(new BasicNameValuePair("latitude", "37.234236462"));
-	    nameValuePairs.add(new BasicNameValuePair("longitude", "-0.12312355435"));
-	    nameValuePairs.add(new BasicNameValuePair("accuracy", "0.00"));
+	    nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitud)));
+	    nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitud)));
+	    nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(precision)));
+	    //nameValuePairs.add(new BasicNameValuePair("latitude", "37.234236462"));
+	    //nameValuePairs.add(new BasicNameValuePair("longitude", "-0.12312355435"));
+	    //nameValuePairs.add(new BasicNameValuePair("accuracy", "0.00"));
+	    Log.e("LogDebug", "Ubicación enviada: " + nameValuePairs.toString());
 	    return nameValuePairs;
+    }
+    
+    private void arrancarServicio()
+    {
+    	//TODO implementar pasarle el mEmail al Service
+    	Intent i = new Intent(this, UbicationService.class);
+    	startService(i);
     }
 }
