@@ -1,12 +1,27 @@
 package android.ubication;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
+import android.os.Bundle;
 import android.text.format.DateUtils;
 import android.text.format.Time;
+import android.util.Log;
 
 /**
  * 
@@ -15,22 +30,52 @@ import android.text.format.Time;
  */
 public class UbicationService extends IntentService
 {
-	  public UbicationService()
-	  {
-	    super(UbicationService.class.getSimpleName());
-	  }
+	//Atributos de Clase
+	private double latitud;
+	private double longitud;
+	private double precision;
+	private LocationManager gestorLocalizacion;
+	private LocationListener locEscuchador;	
+	
+	//Constructor
+	public UbicationService()
+	{
+		super(UbicationService.class.getSimpleName());
+	}
 
-	  @Override
-	  protected void onHandleIntent(Intent intent)
-	  {
-	    //Envía la ubicación al Servidor.
+	@Override
+	protected void onHandleIntent(Intent intent)
+	{
+    	String url = "http://www.energysistem.com/ubication/index.php";
+    	
+		Log.e("LogDebug", "Se ha arrancado el Servicio!");
+		
+		localizar();
+		
+		//Envía la ubicación al Servidor.
+		HttpClient comunicacion = new DefaultHttpClient();
+		HttpPost peticion = new HttpPost(url);
+		try 
+		{
+			peticion.setEntity(new UrlEncodedFormEntity(sendUbication()));
+			peticion.setHeader("Accept", "application/json");
+			HttpResponse respuesta = comunicacion.execute(peticion);
+			String respuestaString = EntityUtils.toString(respuesta.getEntity());
+			Log.e("LogDebug", "Respuesta del Server: " + respuestaString);
+			
+			//TODO Implementar que si el Servidor no responde, se vuelva a enviar la ubicación.
+			
+		} catch (Exception e) 
+		{
+			Log.e("Error", "Error al recibir respuesta del Servidor.", e);
+		}
 
-	    //Después, programa el próximo envío.
-	    scheduleNextUpdate();
-	  }
-
-	  private void scheduleNextUpdate()
-	  {
+		//Después, programa el próximo envío.
+		scheduleNextUpdate();
+	}
+	
+	private void scheduleNextUpdate()
+	{
 	    Intent intent = new Intent(this, this.getClass());
 	    PendingIntent pendingIntent =
 	        PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
@@ -44,5 +89,67 @@ public class UbicationService extends IntentService
 	    
 	    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
 	    alarmManager.set(AlarmManager.RTC, nextUpdateTimeMillis, pendingIntent);
-	  }
+	}
+		
+	private void localizar()
+    {
+    	//Obtenemos una referencia al LocationManager
+    	gestorLocalizacion = 
+    		(LocationManager)getSystemService(Context.LOCATION_SERVICE);
+    	
+    	//Obtenemos la última posición conocida
+    	Location localizacion = 
+    		gestorLocalizacion.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+    	
+    	//Mostramos la última posición conocida
+    	updateUbication(localizacion);
+    	
+    	//Nos registramos para recibir actualizaciones de la posición
+    	locEscuchador = new LocationListener() {
+	    	public void onLocationChanged(Location localizacion) {
+	    		updateUbication(localizacion);
+	    	}
+	    	public void onProviderDisabled(String proveedor){
+	    		//edtEstadoProveedor.setText("Proveedor desconectado");
+	    	}
+	    	public void onProviderEnabled(String proveedor){
+	    		//edtEstadoProveedor.setText("Proveedor conectado");
+	    	}
+	    	public void onStatusChanged(String proveedor, int estado, Bundle extras){
+	    		//edtEstadoProveedor.setText("Estado del proveedor: " + estado);
+	    	}
+    	};
+    	
+    	//Si el GPS está habilitado, usa la ubicación del GPS
+    	if (gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
+    		gestorLocalizacion.requestLocationUpdates(
+	    			LocationManager.GPS_PROVIDER, 30000, 0, locEscuchador);
+    	else //Si no, utiliza la ubicación de la red móvil.
+	    	gestorLocalizacion.requestLocationUpdates(
+	    			LocationManager.NETWORK_PROVIDER, 30000, 0, locEscuchador);
+    }
+     
+    private void updateUbication(Location localizacion)
+    {
+    	if (localizacion != null)
+    	{
+    	    latitud = localizacion.getLatitude();
+    	    longitud = localizacion.getLongitude();
+    	    precision = localizacion.getAccuracy();
+    	}
+    }
+    
+    private List<NameValuePair> sendUbication()
+    {
+    	String idEnviado = String.valueOf(System.currentTimeMillis());
+		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+	    nameValuePairs.add(new BasicNameValuePair("action", "ubication"));
+	    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
+	    nameValuePairs.add(new BasicNameValuePair("email", "flaviocorpa@gmail.com")); //TODO RECIBIR DEL LOGIN
+	    nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitud)));
+	    nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitud)));
+	    nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(precision)));
+	    Log.e("LogDebug", "Ubicación enviada: " + nameValuePairs.toString());
+	    return nameValuePairs;
+    }
 	}

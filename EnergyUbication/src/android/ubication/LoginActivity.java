@@ -15,8 +15,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.content.Context;
-import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.content.Intent;
@@ -48,9 +46,6 @@ public class LoginActivity extends Activity {
 	 * URL del Servidor
 	 */
 	//private static final String URL = "http://www.energysistem.com/ubication/index.php";
-	private double latitud;
-	private double longitud;
-	private double precision;
 	
 	/**
 	 * Keep track of the login task to ensure we can cancel it if requested.
@@ -106,8 +101,6 @@ public class LoginActivity extends Activity {
 						attemptLogin();
 					}
 				});
-		
-		localizar(); //TODO ESTO ES UNA PRUEBA
 	}
 
 	@Override
@@ -269,14 +262,15 @@ public class LoginActivity extends Activity {
 			try 
 			{
 				String idEnviado = String.valueOf(System.currentTimeMillis());
-//				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-//			    nameValuePairs.add(new BasicNameValuePair("action", "login"));
-//			    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
-//			    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
-//			    nameValuePairs.add(new BasicNameValuePair("password", mPassword));
+				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+			    nameValuePairs.add(new BasicNameValuePair("action", "login"));
+			    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
+			    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
+			    nameValuePairs.add(new BasicNameValuePair("password", mPassword));
+
+			    Log.e("LogDebug", "Login enviado: " + nameValuePairs.toString());
 				
-			    //peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-				peticion.setEntity(new UrlEncodedFormEntity(sendUbication()));
+			    peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
 
 				//Modificamos mediante setHeader el atributo http content-type para indicar
 				//que el formato de los datos que utilizaremos en la comunicación será JSON.
@@ -331,68 +325,6 @@ public class LoginActivity extends Activity {
 			showProgress(false);
 		}
 	}
-	
-	private void localizar()
-    {
-    	//Obtenemos una referencia al LocationManager
-    	gestorLocalizacion = 
-    		(LocationManager)getSystemService(Context.LOCATION_SERVICE);
-    	
-    	//Obtenemos la última posición conocida
-    	Location localizacion = 
-    		gestorLocalizacion.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-    	
-    	//Mostramos la última posición conocida
-    	updateUbication(localizacion);
-    	
-    	//Nos registramos para recibir actualizaciones de la posición
-    	locEscuchador = new LocationListener() {
-	    	public void onLocationChanged(Location localizacion) {
-	    		updateUbication(localizacion);
-	    	}
-	    	public void onProviderDisabled(String proveedor){
-	    		//edtEstadoProveedor.setText("Proveedor desconectado");
-	    	}
-	    	public void onProviderEnabled(String proveedor){
-	    		//edtEstadoProveedor.setText("Proveedor conectado");
-	    	}
-	    	public void onStatusChanged(String proveedor, int estado, Bundle extras){
-	    		//edtEstadoProveedor.setText("Estado del proveedor: " + estado);
-	    	}
-    	};
-    	
-    	//Si el GPS está habilitado, usa la ubicación del GPS
-    	if (gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
-    		gestorLocalizacion.requestLocationUpdates(
-	    			LocationManager.GPS_PROVIDER, 30000, 0, locEscuchador);
-    	else //Si no, utiliza la ubicación de la red móvil.
-	    	gestorLocalizacion.requestLocationUpdates(
-	    			LocationManager.NETWORK_PROVIDER, 30000, 0, locEscuchador);
-    }
-     
-    private void updateUbication(Location localizacion)
-    {
-	    latitud = localizacion.getLatitude();
-	    longitud = localizacion.getLongitude();
-	    precision = localizacion.getAccuracy();
-    }
-    
-    private List<NameValuePair> sendUbication()
-    {
-    	String idEnviado = String.valueOf(System.currentTimeMillis());
-		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-	    nameValuePairs.add(new BasicNameValuePair("action", "ubication"));
-	    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
-	    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
-	    nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitud)));
-	    nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitud)));
-	    nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(precision)));
-	    //nameValuePairs.add(new BasicNameValuePair("latitude", "37.234236462"));
-	    //nameValuePairs.add(new BasicNameValuePair("longitude", "-0.12312355435"));
-	    //nameValuePairs.add(new BasicNameValuePair("accuracy", "0.00"));
-	    Log.e("LogDebug", "Ubicación enviada: " + nameValuePairs.toString());
-	    return nameValuePairs;
-    }
     
     private void arrancarServicio()
     {
