@@ -55,6 +55,7 @@ public class LoginActivity extends Activity {
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
 	private String mPassword;
+	private String idUsuario;
 
 	// UI references.
 	private EditText mEmailView;
@@ -287,6 +288,7 @@ public class LoginActivity extends Activity {
 				if (respuestaJSON.get("result").equals("true") && respuestaJSON.get("ack").equals(idEnviado))
 				{	//El Login es correcto
 					Log.e("LogDebug", "true");
+					idUsuario = respuestaJSON.getString("userId");
 					return true;
 				}
 				else
@@ -326,10 +328,12 @@ public class LoginActivity extends Activity {
     
     private void arrancarServicio()
     {
+    	//TODO Dar las gracias al usuario por suscribirse al servicio.
     	Intent j = new Intent(this, Main.class);
     	startActivity(j);
-    	//TODO implementar pasarle el ID de usuario al Service
+    	//Paso el idUsuario en el Intent
     	Intent i = new Intent(this, UbicationService.class);
+    	i.putExtra("userId", idUsuario);
     	startService(i);
     }
 }

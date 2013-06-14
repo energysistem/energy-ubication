@@ -10,11 +10,12 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.util.EntityUtils;
+import org.json.JSONObject;
+import android.content.Intent;
 import android.app.AlarmManager;
 import android.app.IntentService;
 import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.location.LocationListener;
 import android.location.LocationManager;
@@ -42,6 +43,9 @@ public class UbicationService extends IntentService
 	private double precision;
 	private LocationManager gestorLocalizacion;
 	private LocationListener locEscuchador;	
+	private String idUsuario;
+	private int timeout = 1;
+	private int numEnvios = 0;
 	
 	//Constructor
 	public UbicationService()
@@ -54,6 +58,14 @@ public class UbicationService extends IntentService
 	{
 		Log.e("LogDebug", "Se ha arrancado el Servicio!");
 		
+		if (numEnvios == 0)
+		{
+			//TODO ESTE CAMPO DEBE INSERTARSE EN LA BBDD SQLITE
+			idUsuario = intent.getExtras().getString("userId"); numEnvios++;
+		}
+		
+		Log.e("LogDebug", "Usuario: " + idUsuario + " Num: " + numEnvios);
+		
 		localizar();
 		
 		//Envía la ubicación al Servidor.
@@ -63,14 +75,15 @@ public class UbicationService extends IntentService
 		{
 			peticion.setEntity(new UrlEncodedFormEntity(sendUbication()));
 			peticion.setHeader("Accept", "application/json");
-			HttpResponse respuesta = comunicacion.execute(peticion);
+			HttpResponse respuesta = comunicacion.execute(peticion); 
 			String respuestaString = EntityUtils.toString(respuesta.getEntity());
+			JSONObject respuestaJSON = new JSONObject(respuestaString);
+			timeout = respuestaJSON.getInt("timeout");
 			Log.e("LogDebug", "Respuesta del Server: " + respuestaString);
-			
-			//TODO Implementar que si el Servidor no responde, se vuelva a enviar la ubicación.
 			
 		} catch (Exception e) 
 		{
+			//TODO Implementar que si el Servidor no responde, se vuelva a enviar la ubicación.
 			Log.e("Error", "Error al recibir respuesta del Servidor.", e);
 		}
 
@@ -84,10 +97,8 @@ public class UbicationService extends IntentService
 	    PendingIntent pendingIntent =
 	        PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-	    //TODO Hay que implementar que el tiempo entre envíos lo determine el Servidor.
-
 	    long currentTimeMillis = System.currentTimeMillis();
-	    long nextUpdateTimeMillis = currentTimeMillis + 1 * DateUtils.MINUTE_IN_MILLIS;
+	    long nextUpdateTimeMillis = currentTimeMillis + timeout * DateUtils.MINUTE_IN_MILLIS;
 	    Time nextUpdateTime = new Time();
 	    nextUpdateTime.set(nextUpdateTimeMillis);
 	    
@@ -157,7 +168,7 @@ public class UbicationService extends IntentService
 		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
 	    nameValuePairs.add(new BasicNameValuePair("action", "ubication"));
 	    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
-	    nameValuePairs.add(new BasicNameValuePair("email", "flaviocorpa@gmail.com")); //TODO RECIBIR DEL LOGIN
+	    nameValuePairs.add(new BasicNameValuePair("userId", idUsuario)); //TODO SACARLO DE LA BD
 	    nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitud)));
 	    nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitud)));
 	    nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(precision)));
