@@ -36,6 +36,12 @@
         <service
             android:name="android.ubication.UbicationService"
             android:process=":UbicationService" />
+        
+        <receiver android:name=".AutoRun">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
 
         <activity
             android:name="android.ubication.Greeting"
