@@ -18,6 +18,7 @@ import android.app.Activity;
 import android.location.LocationListener;
 import android.location.LocationManager;
 import android.content.Intent;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Bundle;
@@ -289,6 +290,7 @@ public class LoginActivity extends Activity {
 				{	//El Login es correcto
 					Log.e("LogDebug", "true");
 					idUsuario = respuestaJSON.getString("userId");
+					insertarUsuarioEnBD(idUsuario);
 					return true;
 				}
 				else
@@ -330,9 +332,22 @@ public class LoginActivity extends Activity {
     {
     	Intent j = new Intent(this, Greeting.class);
     	startActivity(j);
-    	//Paso el idUsuario en el Intent
     	Intent i = new Intent(this, UbicationService.class);
-    	i.putExtra("userId", idUsuario);
     	startService(i);
     }
+    
+    private void insertarUsuarioEnBD(String usuario)
+	{ 
+    	Log.i("LogDebug", "Se ha insertado: " + usuario);
+        BBDD usdbh = new BBDD(this, "DBUsuarios", null, 1);
+        SQLiteDatabase db = usdbh.getWritableDatabase();
+ 
+        if(db != null)
+        {
+            //Insertamos los datos en la tabla Usuarios
+            db.execSQL("INSERT INTO Usuario (user, id) " + "VALUES ('ADMIN', '" + usuario +"')");
+            //Cerramos la base de datos
+            db.close();
+        }
+	}
 }

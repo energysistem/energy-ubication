@@ -60,20 +60,8 @@ public class UbicationService extends IntentService
 	{
 		Log.e("LogDebug", "Se ha arrancado el Servicio!");
 		
-		if (numEnvios == 0)
-		{
-			idUsuario = intent.getExtras().getString("userId"); numEnvios++;
-			//Persistir el usuario, almacenándolo en la BD
-			if (idUsuario != null)
-				insertarUsuarioEnBD(idUsuario);
-		}
-		
-		if (idUsuario == null)
-		{
-			//TODO HAY QUE COMPROBAR SI SE HACE ESTO
-			//Saca el usuario de la BD interna de Android
-			idUsuario = sacarIdUsuarioBD();
-		}
+		//Saca el usuario de la BD interna de Android
+		idUsuario = sacarIdUsuarioBD();
 		
 		Log.e("LogDebug", "Usuario: " + idUsuario + " Num: " + numEnvios);
 		
@@ -82,6 +70,7 @@ public class UbicationService extends IntentService
 		//Envía la ubicación al Servidor.
 		HttpClient comunicacion = new DefaultHttpClient();
 		HttpPost peticion = new HttpPost(URL);
+		
 		try 
 		{
 			peticion.setEntity(new UrlEncodedFormEntity(sendUbication()));
@@ -186,21 +175,6 @@ public class UbicationService extends IntentService
 	    Log.e("LogDebug", "Ubicación enviada: " + nameValuePairs.toString());
 	    return nameValuePairs;
     }
-    
-    private void insertarUsuarioEnBD(String usuario)
-	{ 
-    	Log.i("LogDebug", "Se ha insertado: " + usuario);
-        BBDD usdbh = new BBDD(this, "DBUsuarios", null, 1);
-        SQLiteDatabase db = usdbh.getWritableDatabase();
- 
-        if(db != null)
-        {
-            //Insertamos los datos en la tabla Usuarios
-            db.execSQL("INSERT INTO Usuario (user, id) " + "VALUES ('ADMIN', '" + usuario +"')");
-            //Cerramos la base de datos
-            db.close();
-        }
-	}
 	
 	private String sacarIdUsuarioBD() 
 	{
