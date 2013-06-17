@@ -184,9 +184,9 @@ public class UbicationService extends IntentService
  
         if(db != null)
         {
-			Cursor cursor = db.rawQuery("SELECT * FROM Usuario WHERE user = 'ADMIN'", null);
-			idUser = cursor.getString(cursor.getColumnIndex("id"));
-			Log.i("LogDebug", "SELECT: " + idUser);
+			Cursor cursor = db.rawQuery("SELECT * FROM Usuario", null);
+			cursor.moveToFirst();
+			idUser = cursor.getString(1);
         }
         
 		return idUser;

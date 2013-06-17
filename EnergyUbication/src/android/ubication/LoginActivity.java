@@ -345,7 +345,7 @@ public class LoginActivity extends Activity {
         if(db != null)
         {
             //Insertamos los datos en la tabla Usuarios
-            db.execSQL("INSERT INTO Usuario (user, id) " + "VALUES ('ADMIN', '" + usuario +"')");
+            db.execSQL("INSERT INTO Usuario (user, id) VALUES ('ADMIN', '" + usuario +"')");
             //Cerramos la base de datos
             db.close();
         }
