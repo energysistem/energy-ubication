@@ -8,7 +8,7 @@ public class Db extends SQLiteOpenHelper {
 	
     String sqlCreate = "CREATE TABLE Users (user TEXT, id TEXT)"; 
     
-    public BBDD(Context context, String name, CursorFactory factory, int version) {
+    public Db (Context context, String name, CursorFactory factory, int version) {
         super(context, name, factory, version);
     }
  
