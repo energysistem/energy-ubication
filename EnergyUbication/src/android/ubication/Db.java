@@ -4,7 +4,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.sqlite.SQLiteDatabase.CursorFactory;
 
-public class BBDD extends SQLiteOpenHelper {
+public class Db extends SQLiteOpenHelper {
 	
     String sqlCreate = "CREATE TABLE Users (user TEXT, id TEXT)"; 
     
