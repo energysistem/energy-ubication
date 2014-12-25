@@ -1,5 +1,4 @@
 package android.ubication;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.http.HttpResponse;
@@ -15,8 +14,6 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.TargetApi;
 import android.app.Activity;
-import android.location.LocationListener;
-import android.location.LocationManager;
 import android.content.Intent;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
@@ -33,7 +30,7 @@ import android.widget.TextView;
 
 /**
  * 
- * @author Flavio Corpa Ríos
+ * @author Flavio Corpa RÃ­os
  *
  */
 public class LoginActivity extends Activity {
@@ -44,7 +41,7 @@ public class LoginActivity extends Activity {
 	public static final String EXTRA_EMAIL = "com.example.android.authenticatordemo.extra.EMAIL";
 	
 	/**
-	 * URL del Servidor
+	 * BaseUrl of the login service
 	 */
 	private static final String URL = "http://www.energysistem.com/ubication/index.php";
 	
@@ -56,7 +53,7 @@ public class LoginActivity extends Activity {
 	// Values for email and password at the time of the login attempt.
 	private String mEmail;
 	private String mPassword;
-	private String idUsuario;
+	private String idUser;
 
 	// UI references.
 	private EditText mEmailView;
@@ -64,9 +61,6 @@ public class LoginActivity extends Activity {
 	private View mLoginFormView;
 	private View mLoginStatusView;
 	private TextView mLoginStatusMessageView;
-	
-	LocationManager gestorLocalizacion;	//ELIMINAR
-	LocationListener locEscuchador;		//ELIMINAR
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -81,56 +75,36 @@ public class LoginActivity extends Activity {
 
 		mPasswordView = (EditText) findViewById(R.id.password);
 		mPasswordView.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-					@Override
-					public boolean onEditorAction(TextView textView, int id,
-							KeyEvent keyEvent) {
-						if (id == R.id.login || id == EditorInfo.IME_NULL) {
-							attemptLogin();
-							return true;
-						}
-						return false;
-					}
-				});
+			@Override
+			public boolean onEditorAction(TextView textView, int id, KeyEvent keyEvent) {
+				if (id == R.id.login || id == EditorInfo.IME_NULL) {
+					attemptLogin();
+					return true;
+				}
+				return false;
+			}
+		});
 
 		mLoginFormView = findViewById(R.id.login_form);
 		mLoginStatusView = findViewById(R.id.login_status);
 		mLoginStatusMessageView = (TextView) findViewById(R.id.login_status_message);
 
 		findViewById(R.id.sign_in_button).setOnClickListener(
-				new View.OnClickListener() {
-					@Override
-					public void onClick(View view) {
-						attemptLogin();
-					}
-				});
+			new View.OnClickListener() {
+				@Override
+				public void onClick(View view) {
+					attemptLogin();
+				}
+			}
+		);
 	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
-		//getMenuInflater().inflate(R.menu.activity_login, menu);
 		return true;
 	}
 	
-	//MENÚ 
-	/*@Override 
-	public boolean onMenuItemSelected(int featureId, MenuItem item) {
-		if (item.getItemId() == R.id.menu_forgot_password)
-		{
-			//Formulario para recuperar la contraseña
-			return true;
-		}
-		else if (item.getItemId() == R.id.menu_registrarse)
-		{
-			//Forulario para REGISTRARSE
-			Intent i = new Intent(this, Registrarse.class);
-			startActivity(i);
-			return true;
-		}
-		else
-			return super.onMenuItemSelected(featureId, item);
-	}*/
-
 	/**
 	 * Attempts to sign in or register the account specified by the login form.
 	 * If there are form errors (invalid email, missing fields, etc.), the
@@ -203,26 +177,27 @@ public class LoginActivity extends Activity {
 
 			mLoginStatusView.setVisibility(View.VISIBLE);
 			mLoginStatusView.animate().setDuration(shortAnimTime)
-					.alpha(show ? 1 : 0)
-					.setListener(new AnimatorListenerAdapter() {
-						@Override
-						public void onAnimationEnd(Animator animation) {
-							mLoginStatusView.setVisibility(show ? View.VISIBLE
-									: View.GONE);
-						}
-					});
+			.alpha(show ? 1 : 0)
+			.setListener(new AnimatorListenerAdapter() {
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					mLoginStatusView.setVisibility(show ? View.VISIBLE
+							: View.GONE);
+				}
+			});
 
 			mLoginFormView.setVisibility(View.VISIBLE);
 			mLoginFormView.animate().setDuration(shortAnimTime)
-					.alpha(show ? 0 : 1)
-					.setListener(new AnimatorListenerAdapter() {
-						@Override
-						public void onAnimationEnd(Animator animation) {
-							mLoginFormView.setVisibility(show ? View.GONE
-									: View.VISIBLE);
-						}
-					});
-		} else {
+			.alpha(show ? 0 : 1)
+			.setListener(new AnimatorListenerAdapter() {
+				@Override
+				public void onAnimationEnd(Animator animation) {
+					mLoginFormView.setVisibility(show ? View.GONE
+							: View.VISIBLE);
+				}
+			});
+		} 
+		else {
 			// The ViewPropertyAnimator APIs are not available, so simply show
 			// and hide the relevant UI components.
 			mLoginStatusView.setVisibility(show ? View.VISIBLE : View.GONE);
@@ -231,75 +206,46 @@ public class LoginActivity extends Activity {
 	}
 
 	/**
-	 * Represents an asynchronous login/registration task used to authenticate
-	 * the user.
+	 * Represents an asynchronous login/registration task used to authenticate the user.
 	 */
 	public class UserLoginTask extends AsyncTask<Void, Void, Boolean> {
 		
 		@Override
 		protected Boolean doInBackground(Void... params) {
 
-			//Creamos un nuevo objeto HttpClient que será el encargado de realizar la
-			//comunicación HTTP con el servidor a partir de los datos que le damos.
-			HttpClient comunicacion = new DefaultHttpClient();
-			
-			//Creamos una peticion POST indicando la URL de llamada al servicio.
-			HttpPost peticion = new HttpPost(URL);
-			
-			//Objeto JSON con los datos del Login.
-//		    	JSONObject object = new JSONObject();
-//		        try 
-//		        {
-//		            object.put("action", "login");
-//		            object.put("id", System.currentTimeMillis()); //Tiempo del Sistema en milisecs.
-//		            object.put("email", mEmail);
-//		            object.put("password", mPassword);
-//		            
-//		        } catch (Exception ex) {
-//		    		Log.e("Error", "Error al crear objeto JSON.", ex);
-//		        }
+			HttpClient server = new DefaultHttpClient();
+			HttpPost request = new HttpPost(URL);
 			
 			try 
 			{
-				String idEnviado = String.valueOf(System.currentTimeMillis());
+				String id = String.valueOf(System.currentTimeMillis());
 				List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-			    nameValuePairs.add(new BasicNameValuePair("action", "login"));
-			    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
-			    nameValuePairs.add(new BasicNameValuePair("email", mEmail));
-			    nameValuePairs.add(new BasicNameValuePair("password", mPassword));
-
-			    Log.e("LogDebug", "Login enviado: " + nameValuePairs.toString());
+			    	nameValuePairs.add(new BasicNameValuePair("action", "login"));
+			    	nameValuePairs.add(new BasicNameValuePair("id", id));
+			    	nameValuePairs.add(new BasicNameValuePair("email", mEmail));
+			    	nameValuePairs.add(new BasicNameValuePair("password", mPassword));
 				
-			    peticion.setEntity(new UrlEncodedFormEntity(nameValuePairs));
-
-				//Modificamos mediante setHeader el atributo http content-type para indicar
-				//que el formato de los datos que utilizaremos en la comunicación será JSON.
-				peticion.setHeader("Accept", "application/json");
+			    	request.setEntity(new UrlEncodedFormEntity(nameValuePairs));
+				resquest.setHeader("Accept", "application/json");
 				
-				//Ejecutamos la petición y obtenemos la respuesta en forma de cadena
-				HttpResponse respuesta = comunicacion.execute(peticion);
-				String respuestaString = EntityUtils.toString(respuesta.getEntity());
+				HttpResponse response = server.execute(request);
+				JSONObject json = new JSONObject(EntityUtils.toString(response.getEntity()));
 				
-				Log.e("LogDebug", "Respuesta del Server: " + respuestaString);
-				
-				//Creamos un objeto JSONObject para poder acceder a los atributos (campos) del objeto.
-				JSONObject respuestaJSON = new JSONObject(respuestaString);
-				
-				//Si la respuesta del servidor es true
-				if (respuestaJSON.get("result").equals("true") && respuestaJSON.get("ack").equals(idEnviado))
-				{	//El Login es correcto
-					Log.e("LogDebug", "true");
-					idUsuario = respuestaJSON.getString("userId");
-					insertarUsuarioEnBD(idUsuario);
+				// Check response from the server
+				if (json.get("result").equals("true") && json.get("ack").equals(id))
+				{	
+					// Login successful
+					idUser = respuestaJSON.getString("userId");
+					addUserToDb(idUser);
 					return true;
 				}
 				else
 				{
-					Log.e("LogDebug", "false");
 					return false;
 				}
-			} catch(Exception e) {
-				Log.e("Error", "Error al recibir respuesta del Servidor.", e);
+			} 
+			catch(Exception e) {
+				Log.e("Error", "Error receiving response from server.", e);
 			}
 			return false;
 		}
@@ -310,11 +256,10 @@ public class LoginActivity extends Activity {
 			showProgress(false);
 
 			if (success) {
-				//Aranco el Servicio
-				arrancarServicio();
-				//Fin del Login
+				runService();
 				finish();
-			} else {
+			} 
+			else {
 				mEmailView.setError(getString(R.string.error_incorrect_password));
 				mPasswordView.setError(getString(R.string.error_incorrect_password));
 				mPasswordView.requestFocus();
@@ -328,26 +273,23 @@ public class LoginActivity extends Activity {
 		}
 	}
     
-    private void arrancarServicio()
-    {
-    	Intent j = new Intent(this, Greeting.class);
-    	startActivity(j);
-    	Intent i = new Intent(this, UbicationService.class);
-    	startService(i);
-    }
+    	private void runServiceÂº()
+    	{
+	    	Intent j = new Intent(this, Greeting.class);
+	    	startActivity(j);
+	    	Intent i = new Intent(this, UbicationService.class);
+	    	startService(i);
+    	}
     
-    private void insertarUsuarioEnBD(String usuario)
+    	private void addUserToDb(String user)
 	{ 
-    	Log.i("LogDebug", "Se ha insertado: " + usuario);
-        BBDD usdbh = new BBDD(this, "DBUsuarios", null, 1);
-        SQLiteDatabase db = usdbh.getWritableDatabase();
- 
-        if(db != null)
-        {
-            //Insertamos los datos en la tabla Usuarios
-            db.execSQL("INSERT INTO Usuario (user, id) VALUES ('ADMIN', '" + usuario +"')");
-            //Cerramos la base de datos
-            db.close();
-        }
+	        Db users = new Db(this, "DBUsers", null, 1);
+	        SQLiteDatabase db = users.getWritableDatabase();
+	 
+	        if(db != null)
+	        {
+	            db.execSQL("INSERT INTO Users (user, id) VALUES ('ADMIN', '" + user +"')");
+	            db.close();
+	        }
 	}
 }

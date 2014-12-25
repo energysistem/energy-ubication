@@ -1,5 +1,4 @@
 package android.ubication;
-
 import java.util.ArrayList;
 import java.util.List;
 import org.apache.http.HttpResponse;
@@ -28,28 +27,23 @@ import android.util.Log;
 
 /**
  * 
- * @author Flavio Corpa Ríos
+ * @author Flavio Corpa RÃ­os
  *
  */
 public class UbicationService extends IntentService
 {
-	/**
-	 * URL del Servidor
-	 */
 	private static final String URL = "http://www.energysistem.com/ubication/index.php";
 	
-	
-	//Atributos de Clase
-	private double latitud;
-	private double longitud;
-	private double precision;
-	private LocationManager gestorLocalizacion;
-	private LocationListener locEscuchador;	
-	private String idUsuario;
+	// Attributes
+	private double latitude;
+	private double longitude;
+	private double accuracy;
+	private LocationManager locManager;
+	private LocationListener locListener;	
+	private String idUser;
 	private int timeout = 1;
-	private int numEnvios = 0;
 	
-	//Constructor
+	// Constructor
 	public UbicationService()
 	{
 		super(UbicationService.class.getSimpleName());
@@ -58,137 +52,122 @@ public class UbicationService extends IntentService
 	@Override
 	protected void onHandleIntent(Intent intent)
 	{
-		Log.e("LogDebug", "Se ha arrancado el Servicio!");
+		// Get user Id from SQLite
+		idUser = getUserId();
+		// Get current ubication
+		locate();
 		
-		//Saca el usuario de la BD interna de Android
-		idUsuario = sacarIdUsuarioBD();
-		
-		Log.e("LogDebug", "Usuario: " + idUsuario + " Num: " + numEnvios);
-		
-		localizar();
-		
-		//Envía la ubicación al Servidor.
-		HttpClient comunicacion = new DefaultHttpClient();
-		HttpPost peticion = new HttpPost(URL);
+		// Request the server
+		HttpClient client = new DefaultHttpClient();
+		HttpPost request = new HttpPost(URL);
 		
 		try 
 		{
-			peticion.setEntity(new UrlEncodedFormEntity(sendUbication()));
-			peticion.setHeader("Accept", "application/json");
-			HttpResponse respuesta = comunicacion.execute(peticion); 
-			String respuestaString = EntityUtils.toString(respuesta.getEntity());
-			JSONObject respuestaJSON = new JSONObject(respuestaString);
-			timeout = respuestaJSON.getInt("timeout");
-			Log.e("LogDebug", "Respuesta del Server: " + respuestaString);
+			// Set request headers
+			request.setEntity(new UrlEncodedFormEntity(sendUbication()));
+			request.setHeader("Accept", "application/json");
+			// Execute request
+			HttpResponse response = client.execute(request);
+			// Get new timeout from response
+			timeout = new JSONObject(EntityUtils.toString(response.getEntity())).getInt("timeout");
 			
-		} catch (Exception e) 
+		}
+		catch (Exception e) 
 		{
-			//TODO Implementar que si el Servidor no responde, se vuelva a enviar la ubicación.
-			Log.e("Error", "Error al recibir respuesta del Servidor.", e);
+			//TODO Try to resend the ubication later
+			Log.e("Error", "Error in server response", e);
 		}
 
-		//Después, programa el próximo envío.
 		scheduleNextUpdate();
 	}
-
+	
 	private void scheduleNextUpdate()
 	{
-	    Intent intent = new Intent(this, this.getClass());
-	    PendingIntent pendingIntent =
-	        PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+	    	Intent intent = new Intent(this, this.getClass());
+	    	PendingIntent pendingIntent = PendingIntent.getService(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-	    long currentTimeMillis = System.currentTimeMillis();
-	    long nextUpdateTimeMillis = currentTimeMillis + timeout * DateUtils.MINUTE_IN_MILLIS;
-	    Time nextUpdateTime = new Time();
-	    nextUpdateTime.set(nextUpdateTimeMillis);
+	    	Time nextUpdateTime = new Time();
+	    	nextUpdateTime.set(System.currentTimeMillis() + timeout * DateUtils.MINUTE_IN_MILLIS);
 	    
-	    AlarmManager alarmManager = (AlarmManager) getSystemService(Context.ALARM_SERVICE);
-	    alarmManager.set(AlarmManager.RTC, nextUpdateTimeMillis, pendingIntent);
+	    	AlarmManager alarmManager = (AlarmManager)getSystemService(Context.ALARM_SERVICE);
+	    	alarmManager.set(AlarmManager.RTC, nextUpdateTimeMillis, pendingIntent);
 	}
-		
-	private void localizar()
-    {
-    	//Obtenemos una referencia al LocationManager
-    	gestorLocalizacion = 
-    		(LocationManager)getSystemService(Context.LOCATION_SERVICE);
-    	
-    	Location localizacion;
-    	
-    	//Obtenemos la última posición conocida
-    	if (gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
-    	{
-    		localizacion = gestorLocalizacion.getLastKnownLocation(LocationManager.GPS_PROVIDER);
-    	}
-    	else
-    	{
-    		localizacion = gestorLocalizacion.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
-    	}
-    	
-    	//Mostramos la última posición conocida
-    	updateUbication(localizacion);
-    	
-    	//Nos registramos para recibir actualizaciones de la posición
-    	locEscuchador = new LocationListener() {
-	    	public void onLocationChanged(Location localizacion) {
-	    		updateUbication(localizacion);
-	    	}
-	    	public void onProviderDisabled(String proveedor){
-	    		//edtEstadoProveedor.setText("Proveedor desconectado");
-	    	}
-	    	public void onProviderEnabled(String proveedor){
-	    		//edtEstadoProveedor.setText("Proveedor conectado");
-	    	}
-	    	public void onStatusChanged(String proveedor, int estado, Bundle extras){
-	    		//edtEstadoProveedor.setText("Estado del proveedor: " + estado);
-	    	}
-    	};
-    	
-    	//Si el GPS está habilitado, usa la ubicación del GPS
-    	if (gestorLocalizacion.isProviderEnabled(LocationManager.GPS_PROVIDER))
-    		gestorLocalizacion.requestLocationUpdates(
-	    			LocationManager.GPS_PROVIDER, 30000, 0, locEscuchador);
-    	else //Si no, utiliza la ubicación de la red móvil.
-	    	gestorLocalizacion.requestLocationUpdates(
-	    			LocationManager.NETWORK_PROVIDER, 30000, 0, locEscuchador);
-    }
-     
-    private void updateUbication(Location localizacion)
-    {
-    	if (localizacion != null)
-    	{
-    	    latitud = localizacion.getLatitude();
-    	    longitud = localizacion.getLongitude();
-    	    precision = localizacion.getAccuracy();
-    	}
-    }
-    
-    private List<NameValuePair> sendUbication()
-    {
-    	String idEnviado = String.valueOf(System.currentTimeMillis());
-		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
-	    nameValuePairs.add(new BasicNameValuePair("action", "ubication"));
-	    nameValuePairs.add(new BasicNameValuePair("id", idEnviado));
-	    nameValuePairs.add(new BasicNameValuePair("userId", idUsuario)); 
-	    nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitud)));
-	    nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitud)));
-	    nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(precision)));
-	    Log.e("LogDebug", "Ubicación enviada: " + nameValuePairs.toString());
-	    return nameValuePairs;
-    }
 	
-	private String sacarIdUsuarioBD() 
-	{
-		BBDD usdbh = new BBDD(this, "DBUsuarios", null, 1);
-        SQLiteDatabase db = usdbh.getReadableDatabase();
-        String idUser = "";
+	private void locate()
+    	{
+	    	// Reference the LocationManager
+	    	locManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+	    	
+	    	Location location;
+	    	
+	    	if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+	    	{
+    			location = locManager.getLastKnownLocation(LocationManager.GPS_PROVIDER);
+	    	}
+	    	else
+	    	{
+	    		location = locManager.getLastKnownLocation(LocationManager.NETWORK_PROVIDER);
+	    	}
+	    	
+	    	updateUbication(location);
+	    	
+	    	// Set listener to update location
+	    	locListener = new LocationListener() 
+	    	{
+	    		public void onLocationChanged(Location loc) {
+	    			updateUbication(loc);
+    			}
+    			public void onProviderDisabled(String provider){
+    				Log.e("Warning", "Provider disconnected");
+    			}
+    			public void onProviderEnabled(String provider){
+    				Log.e("Warning", "Provider connected");
+    			}
+    			public void onStatusChanged(String provider, int status, Bundle extras){
+    				Log.e("Warning", "Provider status changed to: " + status);
+    			}
+	    	};
+	    	
+	    	// If GPS is enabled, get ubication from GPS, if not, from the phone network
+	    	if (locManager.isProviderEnabled(LocationManager.GPS_PROVIDER))
+	    		locManager.requestLocationUpdates(LocationManager.GPS_PROVIDER, 30000, 0, locListener);
+	    	else
+	    		locManager.requestLocationUpdates(LocationManager.NETWORK_PROVIDER, 30000, 0, locListener);
+    	}
+    	
+    	private void updateUbication(Location loc)
+    	{
+	    	if (loc != null)
+	    	{
+	    	    latitude = loc.getLatitude();
+	    	    longitude = loc.getLongitude();
+	    	    accuracy = loc.getAccuracy();
+	    	}
+    	}
+    	
+    	private List<NameValuePair> sendUbication()
+    	{
+    		String id = String.valueOf(System.currentTimeMillis());
+    		List<NameValuePair> nameValuePairs = new ArrayList<NameValuePair>(2);
+	    	nameValuePairs.add(new BasicNameValuePair("action", "ubication"));
+	    	nameValuePairs.add(new BasicNameValuePair("id", id));
+	    	nameValuePairs.add(new BasicNameValuePair("userId", idUser));
+	    	nameValuePairs.add(new BasicNameValuePair("latitude", String.valueOf(latitude)));
+	    	nameValuePairs.add(new BasicNameValuePair("longitude", String.valueOf(longitude)));
+	    	nameValuePairs.add(new BasicNameValuePair("accuracy", String.valueOf(accuracy)));
+	    	return nameValuePairs;
+    	}
+    	
+    	private String getUserId() 
+    	{
+    		Db users = new Db(this, "DBUsers", null, 1);
+        	SQLiteDatabase db = users.getReadableDatabase();
+        	String userId = "";
  
-        if(db != null)
-        {
-			Cursor cursor = db.rawQuery("SELECT * FROM Usuario", null);
-			cursor.moveToFirst();
-			idUser = cursor.getString(1);
+	        if(db != null)
+	        {
+	        	userId = db.rawQuery("SELECT * FROM Users", null).moveToFirst().getString(1);
+	        }
+	        return userId;
         }
-        
-		return idUser;
-	}
 }
