@@ -1,6 +1,6 @@
 energy-ubication
 ================
 
-App para Android para mejorar la experiencia de los usuarios del Club Energy
+Android App to improve Energy Club's users experience.
 
-Issues y commits serán bienvenidos.
+New commits and issues will be welcome!
